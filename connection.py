@@ -1,6 +1,6 @@
  
 from bs4 import BeautifulSoup
-import requests,sys,pandas as pd,time,sqlalchemy ,json
+import requests,sys,pandas as pd,time,sqlalchemy ,json,os
 from datetime import datetime
 credentials = json.loads(open(os.path.join(os.getcwd(),"credentials.json"),'r').read())
 print(credentials)

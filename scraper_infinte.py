@@ -1,7 +1,7 @@
 # %%
  
 from bs4 import BeautifulSoup
-import requests,sys,pandas as pd,time,sqlalchemy ,json
+import requests,sys,pandas as pd,time,sqlalchemy ,json,os
 from datetime import datetime
 
 # %%
