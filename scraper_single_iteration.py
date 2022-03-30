@@ -6,7 +6,7 @@ from datetime import datetime
 
 # %%
 
-credentials = json.loads(open("credentials.json",'r').read())
+credentials = json.loads(open(os.path.join(os.getcwd(),"credentials.json"),'r').read())
 database_ip       = credentials['host']
 database_username = credentials['username']
 database_password = credentials['password']

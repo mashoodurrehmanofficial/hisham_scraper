@@ -2,9 +2,9 @@
 from bs4 import BeautifulSoup
 import requests,sys,pandas as pd,time,sqlalchemy ,json
 from datetime import datetime
-credentials = json.loads(open("credentials.json",'r').read())
+credentials = json.loads(open(os.path.join(os.getcwd(),"credentials.json"),'r').read())
 print(credentials)
-credentials = json.loads(open("credentials.json",'r').read())
+credentials = json.loads(open(os.path.join(os.getcwd(),"credentials.json"),'r').read())
 database_ip       = credentials['host']
 database_username = credentials['username']
 database_password = credentials['password']
