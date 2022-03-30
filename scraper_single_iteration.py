@@ -5,8 +5,8 @@ import requests,sys,pandas as pd,time,sqlalchemy ,json,traceback,os
 from datetime import datetime
 
 # %%
-
-credentials = json.loads(open("./credentials.json",'r').read())
+dir_path = os.path.dirname(os.path.realpath(__file__))
+credentials = json.loads(open(  os.path.join(dir_path,"credentials.json")  ,'r').read())
 database_ip       = credentials['host']
 database_username = credentials['username']
 database_password = credentials['password']
