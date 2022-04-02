@@ -1,16 +1,133 @@
  
-from bs4 import BeautifulSoup
-import requests,sys,pandas as pd,time,sqlalchemy ,json,os
-from datetime import datetime
-credentials = json.loads(open(os.path.join(os.getcwd(),"credentials.json"),'r').read())
-print(credentials)
-credentials = json.loads(open(os.path.join(os.getcwd(),"credentials.json"),'r').read())
-database_ip       = credentials['host']
-database_username = credentials['username']
-database_password = credentials['password']
-database_name     = credentials['database']
-database_connection = sqlalchemy.create_engine('mysql+mysqlconnector://{0}:{1}@{2}/{3}'.
-                                               format(database_username, database_password, 
-                                                      database_ip, database_name))
 
-print(sqlalchemy.inspect(database_connection).has_table("BOOKS"))
+
+import os,json
+import django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'PROJECT.settings')
+django.setup()
+# Now this script or any imported module can use any part of Django it needs.
+from root.models import *
+
+from unidecode import unidecode
+
+def stringify(text): 
+    return unidecode(str(text))
+
+    
+    
+    
+def insertIntoMainTables(data_container):
+    ExchangeTable.objects.all().delete()
+    NftTable.objects.all().delete()
+
+
+    ExchangeTable.objects.bulk_create([
+        ExchangeTable(
+            detail_url=stringify(x[0]),
+            rank=stringify(x[1]),
+            exchange=stringify(x[2]),
+            trust_score=stringify(x[3]),
+            total_24h_volume_normalized=stringify(x[4]),
+            total_24h_volume=stringify(x[5]),
+            visits_similarWeb=stringify(x[6]),
+            coins=stringify(x[7]),
+            pairs=stringify(x[8]),
+            time_stamp=stringify(x[9])
+        )
+        for x in data_container['exchange_data'][:]
+    ])
+    NftTable.objects.bulk_create([
+        NftTable(
+            detail_url=stringify(x[0]),
+            rank=stringify(x[1]),
+            nft=stringify(x[2]),
+            floor_price=stringify(x[3]),
+            total_24h=stringify(x[4]),
+            
+
+            market_cap=stringify(x[5]),
+            total_24h_volume=stringify(x[6]),
+            owners=stringify(x[7]),
+            total_24h_owners=stringify(x[8]),
+            total_assets=stringify(x[9]),
+            time_stamp=stringify(x[10])
+        )
+        for x in data_container['nft_data'][:]
+    ])
+    
+    
+
+
+
+
+
+def insertIntoSubTables(detailed_data_container):
+    DetailedExchangeTable.objects.all().delete()
+    DetailedNftTable.objects.all().delete()
+    
+    
+    exchange_container =[]
+    index=0
+    for key,val in detailed_data_container['exchange_data'].items():
+        for child_row in val: 
+            index=index+1
+            exchange_container.append(
+                DetailedExchangeTable( 
+                    exchange = key ,
+                    rank = stringify(child_row[0]  ) ,
+                    coins = stringify(child_row[1]  ) ,
+                    pairs = stringify(child_row[-8]  ) ,
+                    price = stringify(child_row[-7]  ) ,
+                    spread = stringify(child_row[-6]  ) ,
+                    depth_positive_2 = stringify(child_row[-5]  ) ,
+                    depth_negative_2 = stringify(child_row[-4]  ) ,
+                    total_24h_volume = stringify(child_row[-3]  ) ,
+                    volume_percentage = stringify(child_row[-2]  ) ,
+                    last_traded = stringify(child_row[-1]  ) ,
+                )
+            ) 
+    DetailedExchangeTable.objects.bulk_create(exchange_container)
+    
+    
+     
+    
+    nft_container =[]
+    index=0
+    for key,val in detailed_data_container['nft_data'].items(): 
+        nft_container.append(
+            DetailedNftTable( 
+                nft = key ,  
+                floor_price = stringify(val['floor_price'] ) ,
+                market_cap = stringify(val['market_cap'] ) ,
+                total_24h_volume = stringify(val['total_24h_volume'] ) ,
+                floor_price_usd = stringify(val['floor_price_usd']  ) ,
+                floor_price_percentage = stringify(val['floor_price_percentage'] ) ,
+                market_cap_usd = stringify(val['market_cap_usd'] ) ,
+                market_cap_percentage = stringify(val['market_cap_percentage'] ) ,
+                top_nfts_by_market_cap = stringify(val['top_nfts_by_market_cap'] ) ,
+                stat_table_container = stringify(val['stat_table_container'] ) ,
+            )
+        ) 
+      
+    DetailedNftTable.objects.bulk_create(nft_container)
+    
+def clearDatabase():
+    ExchangeTable.objects.all().delete()
+    NftTable.objects.all().delete()
+    DetailedExchangeTable.objects.all().delete()
+    DetailedNftTable.objects.all().delete()
+    
+    
+    
+if __name__ == '__main__':
+    # clearDatabase()
+# 
+    with open("res.json","r",encoding="utf-8")as file:
+        data_container =  json.loads(file.read())
+        
+    with open("res2.json","r",encoding="utf-8")as file:
+        detailed_data_container =  json.loads(file.read())
+
+    
+    insertIntoMainTables(data_container)
+    insertIntoSubTables(detailed_data_container)

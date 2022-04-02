@@ -1,30 +1,26 @@
-# %%
- 
 from bs4 import BeautifulSoup
-import requests,sys,pandas as pd,time,sqlalchemy ,json,traceback,os
+import requests,sys,pandas as pd,time,sqlalchemy ,json,os,django
 from datetime import datetime
+import itertools,django,os,json
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'PROJECT.settings')
+django.setup() 
+from root.models import *
 
-# %%
-dir_path = os.path.dirname(os.path.realpath(__file__))
-credentials = json.loads(open(  os.path.join(dir_path,"credentials.json")  ,'r').read())
-database_ip       = credentials['host']
-database_username = credentials['username']
-database_password = credentials['password']
-database_name     = credentials['database']
-database_connection = sqlalchemy.create_engine('mysql+mysqlconnector://{0}:{1}@{2}/{3}'.
-                                               format(database_username, database_password, 
-                                                      database_ip, database_name))
+try:
+    from connection import *
+except:
+    from .connection import *
 
-# %%
+
+domain = "https://www.coingecko.com"
 exchange_url = "https://www.coingecko.com/en/exchanges"
 nft_url = "https://www.coingecko.com/en/nft"
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.181 Safari/537.36', 
 }
- 
 
-# %%
+
 def getNextPageIndex(soup):
     all_link_tags = soup.select("a.page-link")
     for link in all_link_tags:
@@ -34,7 +30,7 @@ def getNextPageIndex(soup):
     return None
 
 def formatString(text):
-    return str(text).strip().replace("\n"," ").replace("\t","").replace("  "," ").replace("₿","$")
+    return str(text).strip().replace("\n"," ").replace("\t","").replace("  "," ") 
 
 
 def startTimer(seconds=0):
@@ -45,12 +41,10 @@ def startTimer(seconds=0):
         time.sleep(1)
     sys.stdout.write("\r\nNew Cycle\n")
 
-# %%
 
 
-# %%
-# data_container = {"exchange_data":[],"nft_data":[]}
-def getDataContainer():
+ 
+def getDataContainer(): 
     data_container = {"exchange_data":[],"nft_data":[]}
     for url in [exchange_url,nft_url][:]:
         catergory = 'exchange' if 'exchange' in str(url) else "nft"
@@ -61,9 +55,30 @@ def getDataContainer():
             res = requests.get(temp_url, headers=headers)
             print("-> Creating Soup")
             soup = BeautifulSoup(str(res.text), "lxml")
-            print("-> Analyzing Rows")
+            print("-> Analyzing Rows") 
             table_rows = soup.select("div.coingecko-table div.coin-table.table-responsive  table.table-scrollable tbody tr")
-            table_rows = [[formatString(y.text) for y in x.select("td")][:-1] for x in table_rows] 
+            table_rows = [   [y for y in x.select("td") ][:]   for x in table_rows] 
+            
+            for row_index,row in enumerate(table_rows):
+                for td_index,td in enumerate(row[:]):
+                    table_rows[row_index][td_index] = formatString(td.text)
+                    if td_index==1:
+                        url = formatString(td.text) if not td.select("span.pt-2.flex-column a") else domain+td.select("span.pt-2.flex-column a")[0]['href']
+                        if 'http' not in url:
+                            url = formatString(row[td_index]) if not td.select("a") else domain+td.select("a")[0]['href']
+                        table_rows[row_index][0] = [table_rows[row_index][0],url]
+                            
+            table_rows = [   [y for y in x if len(y)>0][:]   for x in table_rows] 
+            
+            
+            for row_index,ow in enumerate(table_rows):
+                temp = table_rows[row_index][0] 
+                del table_rows[row_index][0] 
+                table_rows[row_index].insert(0,temp[1] )   
+                table_rows[row_index].insert(1,temp[0] )  
+            
+            
+            
             if catergory=='exchange':
                 data_container['exchange_data'] = data_container['exchange_data'] + table_rows
             else:
@@ -76,57 +91,110 @@ def getDataContainer():
         for index,row in enumerate(data_container[x][:]):
             data_container[x][index] = data_container[x][index] + [str(datetime.today())]
             
-            
+    with open("res.json","w",encoding="utf-8")as file:
+        json.dump(data_container,file,indent=4)      
     return data_container          
             
+
+
+
+def getDetailNftData(soup):
+    top_bar = soup.select("dl.tw-mt-5.tw-grid")[0]
+    top_bar_bold_text = [formatString(x.text) for x in top_bar.select("dd.tw-mt-1.tw-text-3xl.tw-font-semibold.tw-text-gray-900")]
+    top_bar_lower_text = [formatString(x.text) for x in top_bar.select("span.tw-text-gray-500.tw-text-xl")]
+    floor_price = top_bar_bold_text[0]
+    market_cap = top_bar_bold_text[1]
+    total_24h_volume = top_bar_bold_text[-1]
+    floor_price_usd = top_bar_lower_text[0].split(" ")[0]
+    floor_price_percentage = top_bar_lower_text[0].split(" ")[-1]
+    market_cap_usd = top_bar_lower_text[-1].split(" ")[0]
+    market_cap_percentage = top_bar_lower_text[-1].split(" ")[-1]
+    top_nfts_by_market_cap = soup.select("a.text-secondary.ml-2.mb-3.col-10.d-block")
+    top_nfts_by_market_cap = [ formatString(x.text) for x in top_nfts_by_market_cap]
+
+    stat_table_container = {}
+    stat_table = soup.select("div.table-responsive table.table")[0]
+    stat_table_container['head'] = [formatString(x.text) for x in stat_table.select("thead tr th")]
+    stat_table_container['body'] = [[formatString(y.text) for y in  x.select("td")] for x in stat_table.select("tbody tr")]
+
+    return {
+        "floor_price": floor_price,
+        "market_cap": market_cap,
+        "total_24h_volume": total_24h_volume,
+        "floor_price_usd": floor_price_usd,
+        "floor_price_percentage": floor_price_percentage,
+        "market_cap_usd": market_cap_usd,
+        "market_cap_percentage": market_cap_percentage,
+        "top_nfts_by_market_cap": top_nfts_by_market_cap,
+        "stat_table_container": stat_table_container, 
+    }
+
         
-        
 
-# %%
-# for x in data_container:
-#     for index,row in enumerate(data_container[x][:]):
-#         data_container[x][index] = data_container[x][index] + [str(datetime.today())]
-#         # print(datetime.today())
-#         print(data_container[x][index])
 
-# %%
-# exchange_df = pd.DataFrame(data=data_container['exchange_data'],columns=["index",'exchange','trust_score','total_24h_volume_normalized','total_24h_volume','visits_similarWeb','coins','pairs',"time_stamp"])
-# nft_df = pd.DataFrame(data=data_container['nft_data'],columns=["index",'nft','floor_price','total_24h',"market_cap","total_24h_volume","owners","total_24h_owners","total_assets","time_stamp" ])
 
-# exchange_df.to_sql(name="exchange", con=database_connection,if_exists='append', chunksize=1000,index=False)
-# nft_df.to_sql(name="nft", con=database_connection,if_exists='append', chunksize=1000,index=False)
+def getDetailedDataContainer(data_container):
+    detailed_data_container = {}
+    for category,data in data_container.items():
+        category_name = category.split("_")[0]
+        detailed_data_container[category] = {}
+        print("-"*50)
+        print("category_name = ", category_name)
+        if category_name=="exchange":
+            for index,row in enumerate(data[:10]):
+                trade_name = row[2]
+                url = row[0]
+                print("Index = ",index)
+                print(url) 
+                res = requests.get(url)
+                soup = BeautifulSoup(str(res.text),"lxml")
+                trs = soup.select("table tbody tr")
+                tds = [[ formatString(y.text) for y in x.select("td")] for x in trs]
+                tds = [[y for y in x if len(y)>0 ]for x in tds if len(x)>10]
+                detailed_data_container[category][trade_name] = tds
+            pass      
+        else:
+            for index,row in enumerate(data[:10]):
+                trade_name = row[2]
+                url = row[0] 
+                print("Index = ",index)
+                print(url) 
+                res = requests.get(url)
+                soup = BeautifulSoup(str(res.text),"lxml")
+                detailed_data_container[category][trade_name] = getDetailNftData(soup)
 
-# %%
-# print(exchange_df.columns)
+    with open("res2.json","w",encoding="utf-8")as file:
+        json.dump(detailed_data_container,file,indent=4)   
+    return detailed_data_container              
+            
+            
+            
 
-# %%
+
+
+
+ 
+
 def main():
-    try:
+    # try:
         index=0
         while True:
-            print("-> Scrapping started !")
+            print("-> Scrapping started Main Pages!")
             data_container = getDataContainer()
-            print("-> Creating DataFrame")
-            
-            exchange_df = pd.DataFrame(data=data_container['exchange_data'],columns=["index",'exchange','trust_score','total_24h_volume_normalized','total_24h_volume','visits_similarWeb','coins','pairs',"time_stamp"])
-            nft_df = pd.DataFrame(data=data_container['nft_data'],columns=["index",'nft','floor_price','total_24h',"market_cap","total_24h_volume","owners","total_24h_owners","total_assets","time_stamp" ])
-            exchange_df.to_sql(name="exchange", con=database_connection,if_exists='append', chunksize=1000,index=False)
-            nft_df.to_sql(name="nft", con=database_connection,if_exists='append', chunksize=1000,index=False)
+            insertIntoMainTables(data_container)
+            # data has been saved to res.json 
+            print("-> Scrapping started Sub-Level Pages!")
+            detailed_data_container = getDetailedDataContainer(data_container)
+            insertIntoSubTables(detailed_data_container)
             print("-> Data Saved to Database !")
             print("-"*50)
-            # startTimer(seconds=20)
+            startTimer(seconds=5)
             index = index+1
-            if index>0:break
-    except Exception as e:
-        print(traceback.print_exc())
-        main()
-    
-     
-
-# %%
+            # if index>2:
+            #        break
+            break
+    # except:
+    #     main()
+        
+        
 main()
-
-# %%
-
-
-
