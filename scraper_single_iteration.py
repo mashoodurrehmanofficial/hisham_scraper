@@ -141,7 +141,7 @@ def getDetailedDataContainer(data_container):
         print("-"*50)
         print("category_name = ", category_name)
         if category_name=="exchange":
-            for index,row in enumerate(data[:10]):
+            for index,row in enumerate(data[:]):
                 trade_name = row[2]
                 url = row[0]
                 print("Index = ",index)
@@ -154,7 +154,7 @@ def getDetailedDataContainer(data_container):
                 detailed_data_container[category][trade_name] = tds
             pass      
         else:
-            for index,row in enumerate(data[:10]):
+            for index,row in enumerate(data[:]):
                 trade_name = row[2]
                 url = row[0] 
                 print("Index = ",index)
