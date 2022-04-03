@@ -14,6 +14,8 @@ from django.dispatch import receiver
 
 class ExchangeTable(models.Model):  
     detail_url = models.CharField(max_length=500,default='',blank=True) 
+    image_url = models.CharField(max_length=500,default='',blank=True) 
+    
     rank = models.CharField(max_length=500,default='',blank=True) 
     exchange = models.CharField(max_length=500,default='',blank=True) 
     trust_score = models.CharField(max_length=500,default='',blank=True) 
@@ -27,6 +29,7 @@ class ExchangeTable(models.Model):
  
 class NftTable(models.Model):  
     detail_url = models.CharField(max_length=500,default='',blank=True) 
+    image_url = models.CharField(max_length=500,default='',blank=True) 
     rank = models.CharField(max_length=500,default='',blank=True) 
     nft = models.CharField(max_length=500,default='',blank=True)  
     floor_price = models.CharField(max_length=500,default='',blank=True)  
@@ -41,6 +44,7 @@ class NftTable(models.Model):
  
 class DetailedExchangeTable(models.Model):  
     exchange = models.CharField(max_length=500,default='',blank=True) 
+    image_url = models.CharField(max_length=500,default='',blank=True) 
     rank = models.CharField(max_length=500,default='',blank=True) 
     coins = models.CharField(max_length=500,default='',blank=True) 
     pairs = models.CharField(max_length=500,default='',blank=True) 

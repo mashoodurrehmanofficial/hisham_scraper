@@ -60,6 +60,8 @@ def getDataContainer():
             table_rows = [   [y for y in x.select("td") ][:]   for x in table_rows] 
             
             for row_index,row in enumerate(table_rows):
+                image = ([x.select("td img") for x in row])
+                image = [x for x in image if x][0][0]['src'] 
                 for td_index,td in enumerate(row[:]):
                     table_rows[row_index][td_index] = formatString(td.text)
                     if td_index==1:
@@ -67,6 +69,8 @@ def getDataContainer():
                         if 'http' not in url:
                             url = formatString(row[td_index]) if not td.select("a") else domain+td.select("a")[0]['href']
                         table_rows[row_index][0] = [table_rows[row_index][0],url]
+                table_rows[row_index].append(image)
+                
                             
             table_rows = [   [y for y in x if len(y)>0][:]   for x in table_rows] 
             
@@ -141,7 +145,7 @@ def getDetailedDataContainer(data_container):
         print("-"*50)
         print("category_name = ", category_name)
         if category_name=="exchange":
-            for index,row in enumerate(data[:]):
+            for index,row in enumerate(data[:10]):
                 trade_name = row[2]
                 url = row[0]
                 print("Index = ",index)
@@ -151,10 +155,20 @@ def getDetailedDataContainer(data_container):
                 trs = soup.select("table tbody tr")
                 tds = [[ formatString(y.text) for y in x.select("td")] for x in trs]
                 tds = [[y for y in x if len(y)>0 ]for x in tds if len(x)>10]
+                
+                tds_images = [x.select("td img") for x in trs]
+                tds_images = [ [y['src'] for y in x] for x in tds_images]
+                tds_images = [x for x in tds_images if x]
+                for row_index,row in enumerate(tds_images):
+                    try: tds[row_index].append(row) 
+                    except:  pass
+                
+                
+                
                 detailed_data_container[category][trade_name] = tds
             pass      
         else:
-            for index,row in enumerate(data[:]):
+            for index,row in enumerate(data[:10]):
                 trade_name = row[2]
                 url = row[0] 
                 print("Index = ",index)

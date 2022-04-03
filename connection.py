@@ -7,7 +7,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'PROJECT.settings')
 django.setup()
 # Now this script or any imported module can use any part of Django it needs.
 from root.models import *
-
+import datetime
 from unidecode import unidecode
 
 def stringify(text): 
@@ -18,9 +18,7 @@ def stringify(text):
     
 def insertIntoMainTables(data_container):
     ExchangeTable.objects.all().delete()
-    NftTable.objects.all().delete()
-
-
+    NftTable.objects.all().delete()  
     ExchangeTable.objects.bulk_create([
         ExchangeTable(
             detail_url=stringify(x[0]),
@@ -32,7 +30,8 @@ def insertIntoMainTables(data_container):
             visits_similarWeb=stringify(x[6]),
             coins=stringify(x[7]),
             pairs=stringify(x[8]),
-            time_stamp=stringify(x[9])
+            image_url=stringify(x[-2]), 
+            time_stamp=stringify(datetime.datetime.now())
         )
         for x in data_container['exchange_data'][:]
     ])
@@ -43,14 +42,14 @@ def insertIntoMainTables(data_container):
             nft=stringify(x[2]),
             floor_price=stringify(x[3]),
             total_24h=stringify(x[4]),
-            
+            image_url=stringify(x[-2]), 
 
             market_cap=stringify(x[5]),
             total_24h_volume=stringify(x[6]),
             owners=stringify(x[7]),
             total_24h_owners=stringify(x[8]),
             total_assets=stringify(x[9]),
-            time_stamp=stringify(x[10])
+            time_stamp=stringify(datetime.datetime.now())
         )
         for x in data_container['nft_data'][:]
     ])
@@ -70,20 +69,26 @@ def insertIntoSubTables(detailed_data_container):
     index=0
     for key,val in detailed_data_container['exchange_data'].items():
         for child_row in val: 
+            images = []
+            try: 
+                images = [x for x in child_row if type(x) is list][0]
+            except:
+                pass
             index=index+1
             exchange_container.append(
                 DetailedExchangeTable( 
                     exchange = key ,
                     rank = stringify(child_row[0]  ) ,
                     coins = stringify(child_row[1]  ) ,
-                    pairs = stringify(child_row[-8]  ) ,
-                    price = stringify(child_row[-7]  ) ,
-                    spread = stringify(child_row[-6]  ) ,
-                    depth_positive_2 = stringify(child_row[-5]  ) ,
-                    depth_negative_2 = stringify(child_row[-4]  ) ,
-                    total_24h_volume = stringify(child_row[-3]  ) ,
-                    volume_percentage = stringify(child_row[-2]  ) ,
-                    last_traded = stringify(child_row[-1]  ) ,
+                    pairs = stringify(child_row[-9]  ) ,
+                    price = stringify(child_row[-8]  ) ,
+                    spread = stringify(child_row[-7]  ) ,
+                    depth_positive_2 = stringify(child_row[-6]  ) ,
+                    depth_negative_2 = stringify(child_row[-5]  ) ,
+                    total_24h_volume = stringify(child_row[-4]  ) ,
+                    volume_percentage = stringify(child_row[-3]  ) ,
+                    last_traded = stringify(child_row[-2]  ) ,
+                    image_url=stringify(images), 
                 )
             ) 
     DetailedExchangeTable.objects.bulk_create(exchange_container)
