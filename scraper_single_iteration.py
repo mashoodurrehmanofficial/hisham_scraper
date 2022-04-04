@@ -10,6 +10,11 @@ try:
     from connection import *
 except:
     from .connection import *
+    
+    
+from forex_python.bitcoin import BtcConverter
+b = BtcConverter()
+usd_unit = b.convert_btc_to_cur(1, 'USD')
 
 
 domain = "https://www.coingecko.com"
@@ -30,7 +35,11 @@ def getNextPageIndex(soup):
     return None
 
 def formatString(text):
-    return str(text).strip().replace("\n"," ").replace("\t","").replace("  "," ") 
+    text =  str(text).strip().replace("\n"," ").replace("\t","").replace("  "," ") 
+    if "₿" in text:
+        text =   usd_unit* float(text[1:])
+        text = "$" + '{:,}'.format(text)
+    return text
 
 
 def startTimer(seconds=0):
@@ -93,7 +102,7 @@ def getDataContainer():
             
     for x in data_container:
         for index,row in enumerate(data_container[x][:]):
-            data_container[x][index] = data_container[x][index] + [str(datetime.today())]
+            data_container[x][index] = data_container[x][index] + [str(datetime.datetime.now())]
             
     with open("res.json","w",encoding="utf-8")as file:
         json.dump(data_container,file,indent=4)      
