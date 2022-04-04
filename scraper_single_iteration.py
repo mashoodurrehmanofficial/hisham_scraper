@@ -37,7 +37,12 @@ def getNextPageIndex(soup):
 def formatString(text):
     text =  str(text).strip().replace("\n"," ").replace("\t","").replace("  "," ") 
     if "₿" in text:
-        text =   usd_unit* float(text[1:])
+        text = text[1:] 
+        text = text if len(str(text))>0 else '0'
+        # print("text  = ",text)
+        
+        text = text.replace("'","").replace('"','').split(" ")[0]
+        text =   usd_unit* float(text[:])
         text = "$" + '{:,}'.format(text)
     return text
 
@@ -55,11 +60,13 @@ def startTimer(seconds=0):
  
 def getDataContainer(): 
     data_container = {"exchange_data":[],"nft_data":[]}
-    for url in [exchange_url,nft_url][:]:
+    for url in [exchange_url,nft_url][:]: 
+    
         catergory = 'exchange' if 'exchange' in str(url) else "nft"
         for index in range(1,100):
-            print("-"*50)
-            temp_url = url+ f'?page={index}'
+            print("-"*50) 
+            temp_url = exchange_url if catergory=='exchange'else nft_url   + f'?page={index}'
+            temp_url = temp_url + f'?page={index}'
             print(temp_url)
             res = requests.get(temp_url, headers=headers)
             print("-> Creating Soup")
@@ -90,7 +97,7 @@ def getDataContainer():
                 table_rows[row_index].insert(0,temp[1] )   
                 table_rows[row_index].insert(1,temp[0] )  
             
-            
+            print(f"total row on {index} = ", len(table_rows))
             
             if catergory=='exchange':
                 data_container['exchange_data'] = data_container['exchange_data'] + table_rows
@@ -98,8 +105,9 @@ def getDataContainer():
                 data_container['nft_data'] = data_container['nft_data'] + table_rows
                 
             if not getNextPageIndex(soup=soup):
+                print("No next page")
                 break
-            
+    print("before saving - data_container['exchange_data'] = ", len(data_container['exchange_data']))       
     for x in data_container:
         for index,row in enumerate(data_container[x][:]):
             data_container[x][index] = data_container[x][index] + [str(datetime.datetime.now())]
@@ -207,14 +215,13 @@ def main():
             insertIntoMainTables(data_container)
             # data has been saved to res.json 
             print("-> Scrapping started Sub-Level Pages!")
-            detailed_data_container = getDetailedDataContainer(data_container)
-            insertIntoSubTables(detailed_data_container)
-            print("-> Data Saved to Database !")
+            # detailed_data_container = getDetailedDataContainer(data_container)
+            # insertIntoSubTables(detailed_data_container)
+            # print("-> Data Saved to Database !")
             print("-"*50)
-            startTimer(seconds=5)
+            # startTimer(seconds=5)
             index = index+1
-            # if index>2:
-            #        break
+       
             break
     # except:
     #     main()
