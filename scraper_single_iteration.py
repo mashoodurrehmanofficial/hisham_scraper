@@ -60,12 +60,12 @@ def startTimer(seconds=0):
  
 def getDataContainer(): 
     data_container = {"exchange_data":[],"nft_data":[]}
-    for url in [exchange_url,nft_url][:]: 
+    for url in ["https://www.coingecko.com/en/exchanges","https://www.coingecko.com/en/nft"][1:]: 
     
         catergory = 'exchange' if 'exchange' in str(url) else "nft"
         for index in range(1,100):
             print("-"*50) 
-            temp_url = exchange_url if catergory=='exchange'else nft_url   + f'?page={index}'
+            temp_url = "https://www.coingecko.com/en/exchanges" if catergory=='exchange'else "https://www.coingecko.com/en/nft" 
             temp_url = temp_url + f'?page={index}'
             print(temp_url)
             res = requests.get(temp_url, headers=headers)
@@ -215,9 +215,9 @@ def main():
             insertIntoMainTables(data_container)
             # data has been saved to res.json 
             print("-> Scrapping started Sub-Level Pages!")
-            detailed_data_container = getDetailedDataContainer(data_container)
-            insertIntoSubTables(detailed_data_container)
-            print("-> Data Saved to Database !")
+            # detailed_data_container = getDetailedDataContainer(data_container)
+            # insertIntoSubTables(detailed_data_container)
+            # print("-> Data Saved to Database !")
             print("-"*50)
             # startTimer(seconds=5)
             index = index+1
