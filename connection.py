@@ -54,7 +54,8 @@ def insertIntoMainTables(data_container):
         for x in data_container['nft_data'][:]
     ])
     
-    
+    print("ExchangeTable = ",ExchangeTable.objects.all().count())
+    print("NftTable = ",NftTable.objects.all().count())
 
 
 
@@ -115,6 +116,14 @@ def insertIntoSubTables(detailed_data_container):
         ) 
       
     DetailedNftTable.objects.bulk_create(nft_container)
+    print("DetailedExchangeTable = ",DetailedExchangeTable.objects.all().count())
+    print("DetailedNftTable = ",DetailedNftTable.objects.all().count())
+    
+    
+    
+    
+    
+    
     
 def clearDatabase():
     ExchangeTable.objects.all().delete()
