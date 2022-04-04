@@ -60,7 +60,7 @@ def startTimer(seconds=0):
  
 def getDataContainer(): 
     data_container = {"exchange_data":[],"nft_data":[]}
-    for url in ["https://www.coingecko.com/en/exchanges","https://www.coingecko.com/en/nft"][1:]: 
+    for url in [exchange_url,nft_url][1:]: 
     
         catergory = 'exchange' if 'exchange' in str(url) else "nft"
         for index in range(1,100):

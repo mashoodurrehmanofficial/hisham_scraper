@@ -122,8 +122,11 @@ def insertIntoSubTables(detailed_data_container):
     
     
     
-    
-    
+def checkStatus(): 
+    print("ExchangeTable = ",ExchangeTable.objects.all().count())
+    print("NftTable = ",NftTable.objects.all().count())
+    print("DetailedExchangeTable = ",DetailedExchangeTable.objects.all().count())
+    print("DetailedNftTable = ",DetailedNftTable.objects.all().count())
     
 def clearDatabase():
     ExchangeTable.objects.all().delete()
@@ -136,6 +139,7 @@ def clearDatabase():
 if __name__ == '__main__':
     # clearDatabase()
 # 
+    checkStatus()
     with open("res.json","r",encoding="utf-8")as file:
         data_container =  json.loads(file.read())
         
@@ -143,5 +147,5 @@ if __name__ == '__main__':
         detailed_data_container =  json.loads(file.read())
 
     
-    insertIntoMainTables(data_container)
-    insertIntoSubTables(detailed_data_container)
+    # insertIntoMainTables(data_container)
+    # insertIntoSubTables(detailed_data_container)
