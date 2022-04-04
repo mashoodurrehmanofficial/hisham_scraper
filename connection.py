@@ -21,7 +21,7 @@ def insertIntoMainTables(data_container):
     NftTable.objects.all().delete()  
     ExchangeTable.objects.bulk_create([
         ExchangeTable(
-            detail_url=stringify(x[0]),
+            detail_url=stringify(x[0]).split('/')[-1],
             rank=stringify(x[1]),
             exchange=stringify(x[2]),
             trust_score=stringify(x[3]),
@@ -37,7 +37,7 @@ def insertIntoMainTables(data_container):
     ])
     NftTable.objects.bulk_create([
         NftTable(
-            detail_url=stringify(x[0]),
+            detail_url=stringify(x[0]).split('/')[-1],
             rank=stringify(x[1]),
             nft=stringify(x[2]),
             floor_price=stringify(x[3]),
@@ -139,13 +139,15 @@ def clearDatabase():
 if __name__ == '__main__':
     # clearDatabase()
 # 
-    checkStatus()
+    # checkStatus()
     with open("res.json","r",encoding="utf-8")as file:
         data_container =  json.loads(file.read())
         
     with open("res2.json","r",encoding="utf-8")as file:
         detailed_data_container =  json.loads(file.read())
 
+    
+    print    (NftTable.objects.all().values())
     
     # insertIntoMainTables(data_container)
     # insertIntoSubTables(detailed_data_container)
