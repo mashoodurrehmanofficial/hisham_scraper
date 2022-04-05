@@ -96,7 +96,7 @@ def insertIntoSubTables(detailed_data_container):
                     volume_percentage = stringify(child_row[-3]  ) ,
                     last_traded = stringify(child_row[-2]  ) ,
                     image_url=stringify(images), 
-                    parent = parent.id
+                    parent_id = parent.id
                 )
             ) 
     DetailedExchangeTable.objects.bulk_create(exchange_container)
@@ -125,7 +125,7 @@ def insertIntoSubTables(detailed_data_container):
                 market_cap_percentage = stringify(val['market_cap_percentage'] ) ,
                 top_nfts_by_market_cap = stringify(val['top_nfts_by_market_cap'] ) ,
                 stat_table_container = stringify(val['stat_table_container'] ) ,
-                parent = parent.id
+                parent_id = parent.id
             )
         ) 
       
@@ -151,17 +151,17 @@ def clearDatabase():
     
     
 if __name__ == '__main__':
-    # clearDatabase()
+    clearDatabase()
 # 
     # checkStatus()
-    with open("res.json","r",encoding="utf-8")as file:
-        data_container =  json.loads(file.read())
+    # with open("res.json","r",encoding="utf-8")as file:
+    #     data_container =  json.loads(file.read())
         
-    with open("res2.json","r",encoding="utf-8")as file:
-        detailed_data_container =  json.loads(file.read())
+    # with open("res2.json","r",encoding="utf-8")as file:
+    #     detailed_data_container =  json.loads(file.read())
 
-    # print(len(data_container['nft_data']))
-    # print    (NftTable.objects.all().values())
+    # # print(len(data_container['nft_data']))
+    # # print    (NftTable.objects.all().values())
     
-    insertIntoMainTables(data_container)
-    insertIntoSubTables(detailed_data_container)
+    # insertIntoMainTables(data_container)
+    # insertIntoSubTables(detailed_data_container)

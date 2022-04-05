@@ -16,8 +16,8 @@ def stringify(text):
 
 # FTX  Centralized
 
-base_count = NftTable.objects.filter(nft='CloneX').count()
-child_count = DetailedExchangeTable.objects.filter(exchange='FTX  Centralized').count()
+base_count = NftTable.objects.filter(nft='CloneX') 
+child_count = DetailedExchangeTable.objects.filter(exchange='FTX  Centralized') 
 
 print(base_count)
-print(child_count)
+print(child_count.values())
