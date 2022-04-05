@@ -217,9 +217,9 @@ def main():
             insertIntoMainTables(data_container)
             # data has been saved to res.json 
             print("-> Scrapping started Sub-Level Pages!")
-            # detailed_data_container = getDetailedDataContainer(data_container)
-            # insertIntoSubTables(detailed_data_container)
-            # print("-> Data Saved to Database !")
+            detailed_data_container = getDetailedDataContainer(data_container)
+            insertIntoSubTables(detailed_data_container)
+            print("-> Data Saved to Database !")
             print("-"*50)
             # startTimer(seconds=5)
             index = index+1
