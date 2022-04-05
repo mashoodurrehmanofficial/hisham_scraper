@@ -96,7 +96,7 @@ def insertIntoSubTables(detailed_data_container):
                     volume_percentage = stringify(child_row[-3]  ) ,
                     last_traded = stringify(child_row[-2]  ) ,
                     image_url=stringify(images), 
-                    parent = parent
+                    parent = parent.id
                 )
             ) 
     DetailedExchangeTable.objects.bulk_create(exchange_container)
@@ -125,7 +125,7 @@ def insertIntoSubTables(detailed_data_container):
                 market_cap_percentage = stringify(val['market_cap_percentage'] ) ,
                 top_nfts_by_market_cap = stringify(val['top_nfts_by_market_cap'] ) ,
                 stat_table_container = stringify(val['stat_table_container'] ) ,
-                parent = parent
+                parent = parent.id
             )
         ) 
       
