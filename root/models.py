@@ -55,6 +55,7 @@ class DetailedExchangeTable(models.Model):
     total_24h_volume = models.CharField(max_length=500,default='',blank=True) 
     volume_percentage = models.CharField(max_length=500,default='',blank=True) 
     last_traded = models.CharField(max_length=500,default='',blank=True)  
+    parent = models.ForeignKey(ExchangeTable,on_delete=models.CASCADE, null=True,blank=True)
 
 class DetailedNftTable(models.Model):  
     nft = models.CharField(max_length=500,default='',blank=True) 
@@ -67,3 +68,4 @@ class DetailedNftTable(models.Model):
     market_cap_percentage = models.CharField(max_length=500,default='',blank=True)  
     top_nfts_by_market_cap = models.TextField(default='',blank=True)  
     stat_table_container = models.TextField(default='',blank=True)   
+    parent = models.ForeignKey(NftTable,on_delete=models.CASCADE, null=True,blank=True)

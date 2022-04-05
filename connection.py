@@ -62,6 +62,7 @@ def insertIntoMainTables(data_container):
 
 
 def insertIntoSubTables(detailed_data_container):
+
     DetailedExchangeTable.objects.all().delete()
     DetailedNftTable.objects.all().delete()
     
@@ -69,6 +70,11 @@ def insertIntoSubTables(detailed_data_container):
     exchange_container =[]
     index=0
     for key,val in detailed_data_container['exchange_data'].items():
+        parent = ExchangeTable.objects.filter(exchange=key)
+        if parent:
+            parent = parent.first()
+        else:
+            parent = None
         for child_row in val: 
             images = []
             try: 
@@ -90,16 +96,23 @@ def insertIntoSubTables(detailed_data_container):
                     volume_percentage = stringify(child_row[-3]  ) ,
                     last_traded = stringify(child_row[-2]  ) ,
                     image_url=stringify(images), 
+                    parent = parent
                 )
             ) 
     DetailedExchangeTable.objects.bulk_create(exchange_container)
     
-    
+    pass
      
     
     nft_container =[]
     index=0
     for key,val in detailed_data_container['nft_data'].items(): 
+        print(key)
+        parent = NftTable.objects.filter(nft=key)
+        if parent:
+            parent = parent.first()
+        else:
+            parent = None
         nft_container.append(
             DetailedNftTable( 
                 nft = key ,  
@@ -112,6 +125,7 @@ def insertIntoSubTables(detailed_data_container):
                 market_cap_percentage = stringify(val['market_cap_percentage'] ) ,
                 top_nfts_by_market_cap = stringify(val['top_nfts_by_market_cap'] ) ,
                 stat_table_container = stringify(val['stat_table_container'] ) ,
+                parent = parent
             )
         ) 
       
@@ -146,8 +160,8 @@ if __name__ == '__main__':
     with open("res2.json","r",encoding="utf-8")as file:
         detailed_data_container =  json.loads(file.read())
 
+    # print(len(data_container['nft_data']))
+    # print    (NftTable.objects.all().values())
     
-    print    (NftTable.objects.all().values())
-    
-    # insertIntoMainTables(data_container)
-    # insertIntoSubTables(detailed_data_container)
+    insertIntoMainTables(data_container)
+    insertIntoSubTables(detailed_data_container)
